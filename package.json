@@ -1,0 +1,20 @@
+{
+  "name": "devtinder-be",
+  "version": "1.0.0",
+  "description": "DevTinder Backend Design",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon src/app.js",
+    "Dev":"nodemon src/app.js"
+  },
+  "keywords": [
+    "NodeJS",
+    "ExpressJS",
+    "MongoDb"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express.js": "^1.0.0"
+  }
+}
