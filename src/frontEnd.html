@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cheetila Count</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .add-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff6b6b, #ff8787);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .add-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translate(-50%, -60%);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .modal-header h2 {
+            color: #333;
+            font-size: 1.8rem;
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 30px;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .attendance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .attendance-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .attendance-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .person-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-edit:hover {
+            background: #e0a800;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+        }
+
+        .card-content {
+            margin-bottom: 15px;
+        }
+
+        .card-content div {
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .count-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .count-btn {
+            width: 35px;
+            height: 35px;
+            border: none;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .count-btn.decrement {
+            background: #dc3545;
+            color: white;
+        }
+
+        .count-btn.decrement:hover {
+            background: #c82333;
+            transform: scale(1.1);
+        }
+
+        .count-btn.increment {
+            background: #28a745;
+            color: white;
+        }
+
+        .count-btn.increment:hover {
+            background: #1e7e34;
+            transform: scale(1.1);
+        }
+
+        .count-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: white;
+            margin-top: 50px;
+            grid-column: 1 / -1;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .total-count {
+            text-align: center;
+            color: white;
+            margin: 20px 0;
+            font-size: 1.2rem;
+        }
+
+        .total-count span {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Attendance Management System</h1>
+            <p>Manage your team attendance efficiently</p>
+        </div>
+
+        <div class="total-count">
+            Total Attendance: <span id="totalCount">0</span>
+        </div>
+
+        <div class="attendance-grid" id="attendanceGrid">
+            <div class="empty-state">
+                <h3>No attendance records yet</h3>
+                <p>Click the + button to add your first attendance record</p>
+            </div>
+        </div>
+    </div>
+
+    <button class="add-button" onclick="openModal()">+</button>
+
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Attendance</h2>
+            </div>
+            <form id="attendanceForm">
+                <input type="hidden" id="recordId">
+                <div class="form-group">
+                    <label for="studentName">Student Name *</label>
+                    <input type="text" id="studentName" placeholder="Enter student name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Date *</label>
+                    <input type="date" id="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="status">Status *</label>
+                    <select id="status" required>
+                        <option value="">Select Status</option>
+                        <option value="Present">Present</option>
+                        <option value="Absent">Absent</option>
+                        <option value="Late">Late</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="count">Count *</label>
+                    <input type="number" id="count" min="0" value="1" required>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">Add Attendance</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let attendanceRecords = JSON.parse(localStorage.getItem('attendanceRecords')) || [];
+        let editingId = null;
+
+        function openModal() {
+            document.getElementById('addModal').style.display = 'block';
+            document.getElementById('modalTitle').textContent = 'Add New Attendance';
+            document.getElementById('submitBtn').textContent = 'Add Attendance';
+            editingId = null;
+            document.getElementById('recordId').value = '';
+            document.getElementById('attendanceForm').reset();
+        }
+
+        function closeModal() {
+            document.getElementById('addModal').style.display = 'none';
+            editingId = null;
+            document.getElementById('attendanceForm').reset();
+        }
+
+        function renderAttendanceList() {
+            const grid = document.getElementById('attendanceGrid');
+            
+            if (attendanceRecords.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No attendance records yet</h3>
+                        <p>Click the + button to add your first attendance record</p>
+                    </div>
+                `;
+                updateTotalCount();
+                return;
+            }
+
+            grid.innerHTML = '';
+            attendanceRecords.forEach(record => {
+                const card = document.createElement('div');
+                card.className = 'attendance-card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="person-name">${record.studentName}</div>
+                        <div class="card-actions">
+                            <button class="btn btn-edit" onclick="editRecord(${record.id})">Edit</button>
+                            <button class="btn btn-delete" onclick="deleteRecord(${record.id})">Delete</button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div><strong>Date:</strong> ${record.date}</div>
+                        <div><strong>Status:</strong> <span style="color: ${getStatusColor(record.status)}">${record.status}</span></div>
+                    </div>
+                    <div class="count-controls">
+                        <button class="count-btn decrement" onclick="decrementCount(${record.id})">-</button>
+                        <div class="count-display">${record.count}</div>
+                        <button class="count-btn increment" onclick="incrementCount(${record.id})">+</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            updateTotalCount();
+        }
+
+        function getStatusColor(status) {
+            switch(status) {
+                case 'Present': return '#28a745';
+                case 'Absent': return '#dc3545';
+                case 'Late': return '#ffc107';
+                default: return '#6c757d';
+            }
+        }
+
+        function updateTotalCount() {
+            const total = attendanceRecords.reduce((sum, record) => sum + parseInt(record.count || 0), 0);
+            document.getElementById('totalCount').textContent = total;
+        }
+
+        function editRecord(id) {
+            const record = attendanceRecords.find(r => r.id === id);
+            if (record) {
+                editingId = id;
+                document.getElementById('modalTitle').textContent = 'Edit Attendance';
+                document.getElementById('submitBtn').textContent = 'Update Attendance';
+                document.getElementById('recordId').value = id;
+                document.getElementById('studentName').value = record.studentName;
+                document.getElementById('date').value = record.date;
+                document.getElementById('status').value = record.status;
+                document.getElementById('count').value = record.count || 1;
+                document.getElementById('addModal').style.display = 'block';
+            }
+        }
+
+        function deleteRecord(id) {
+            if (confirm('Are you sure you want to delete this attendance record?')) {
+                attendanceRecords = attendanceRecords.filter(record => record.id !== id);
+                saveToLocalStorage();
+                renderAttendanceList();
+            }
+        }
+
+        function incrementCount(id) {
+            const record = attendanceRecords.find(r => r.id === id);
+            if (record) {
+                record.count = (parseInt(record.count) || 0) + 1;
+                saveToLocalStorage();
+                renderAttendanceList();
+            }
+        }
+
+        function decrementCount(id) {
+            const record = attendanceRecords.find(r => r.id === id);
+            if (record && (parseInt(record.count) || 0) > 0) {
+                record.count = (parseInt(record.count) || 0) - 1;
+                saveToLocalStorage();
+                renderAttendanceList();
+            }
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+        }
+
+        document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const studentName = document.getElementById('studentName').value;
+            const date = document.getElementById('date').value;
+            const status = document.getElementById('status').value;
+            const count = parseInt(document.getElementById('count').value) || 1;
+            const id = editingId || Date.now();
+
+            if (editingId) {
+                // Update existing record
+                const index = attendanceRecords.findIndex(r => r.id === editingId);
+                if (index !== -1) {
+                    attendanceRecords[index] = {
+                        id: editingId,
+                        studentName: studentName,
+                        date: date,
+                        status: status,
+                        count: count
+                    };
+                }
+            } else {
+                // Add new record
+                attendanceRecords.push({
+                    id: id,
+                    studentName: studentName,
+                    date: date,
+                    status: status,
+                    count: count
+                });
+            }
+
+            saveToLocalStorage();
+            renderAttendanceList();
+            closeModal();
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('addModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Initial render
+        renderAttendanceList();
+    </script>
+</body>
+</html>
