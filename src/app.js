@@ -2,25 +2,27 @@ const express=require('express');
 const app=express();
 
 
-
-app.get("/users",(req,res)=>{
-    res.send({firstname:"Suneel",lastname:"Pedakapu"})
-})
-
-
-
-app.post("/user",(req,res)=>{
-    res.send("User added successfully to DB")
-})
-
-app.delete("/user",(req,res)=>{
-    res.send("User Deleted successfully from DB")
-})
-
-
-app.use("/",(req,res)=>{
-    res.send("Hello test ");
-});
+app.use("/user",
+  (req,res,next)=>{
+    console.log("Route Handler 1")
+    // res.send("Route Handler 1 ");
+    next();
+  },
+  (req,res,next)=>{
+    console.log("Route Handler 2")
+    // res.send("Route Handler 2 ");
+    next()
+  },
+  (req,res,next)=>{
+    console.log("Route Handler 3")
+    res.send("Route Handler 3 ");
+    next()
+  },
+  (req,res,next)=>{
+    console.log("Route Handler 4")
+    res.send("Route Handler 4 ");
+   }
+);
 
 
 
