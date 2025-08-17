@@ -1,19 +1,15 @@
 const express=require('express');
 const app=express();
 
-const {adminAuth}=require("./middlewares/auth")
+const {adminAuth,user}=require("./middlewares/auth")
 
 app.use("/admin",adminAuth);
 
-app.get("/admin/getAlldata", (req,res,next)=>{
-  res.send("All data sent");
-});
+app.use("/user",user);
 
-
-app.get("/admin/deleteUser",(req,res)=>{
-  res.send("Delete User")
-});
-
+app.get("/user/getAlldata",(req,res)=>{
+  res.send("All data sent")
+})
 
 app.listen(3000,()=>{
     console.log("My server successfully running on port 3000...");
