@@ -1,29 +1,18 @@
 const express=require('express');
 const app=express();
 
+const {adminAuth}=require("./middlewares/auth")
 
-app.use("/user",
-  (req,res,next)=>{
-    console.log("Route Handler 1")
-    // res.send("Route Handler 1 ");
-    next();
-  },
-  (req,res,next)=>{
-    console.log("Route Handler 2")
-    // res.send("Route Handler 2 ");
-    next()
-  },
-  (req,res,next)=>{
-    console.log("Route Handler 3")
-    res.send("Route Handler 3 ");
-    next()
-  },
-  (req,res,next)=>{
-    console.log("Route Handler 4")
-    res.send("Route Handler 4 ");
-   }
-);
+app.use("/admin",adminAuth);
 
+app.get("/admin/getAlldata", (req,res,next)=>{
+  res.send("All data sent");
+});
+
+
+app.get("/admin/deleteUser",(req,res)=>{
+  res.send("Delete User")
+});
 
 
 app.listen(3000,()=>{
