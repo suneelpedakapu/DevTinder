@@ -1,31 +1,33 @@
 const express=require('express');
 const app=express();
 
-const {adminAuth,user}=require("./middlewares/auth")
+const dbConnect=require("./config/database");
+const User=require("./models/user");
 
-// error handlimg using error parameter
-app.get("/getUserData",(req,res)=>{
-  throw new Error("error thrown");
-});
-
-app.use("/",(err,req,res,next)=>{
-  if(err){
-    res.status(500).send("Something went wrong")
-  }
-})
-
-
-// error handling using try and catch
-app.use("/",(req,res)=>{
+app.post("/signUp",async (req,res)=>{
+  const user = new User({
+    firstName:"Balu",
+    lastName:"Pedakapu",
+    emailId:"balupedakapu143@gmail.com",
+    password:"balu@143"
+  })
   try{
-    throw new Error("New error thrown")
+  await user.save();
+  res.send("User Sent Successfully");
   }
-  catch(err){
-    res.status(500).send("Error occured please review this")
+  catch(error){
+    res.status(401).send("Error saving the User:" + error.message);
   }
 });
 
 
-app.listen(3000,()=>{
-    console.log("My server successfully running on port 3000...");
+dbConnect().
+then(()=>{
+    console.log("Db Connected Successfully");
+    app.listen(3000,()=>{
+      console.log("My server successfully running on port 3000..."); }
+    );
+}).
+catch(error=>{
+    console.log("Error Occured")
 });
