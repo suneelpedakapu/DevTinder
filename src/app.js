@@ -4,13 +4,11 @@ const app=express();
 const dbConnect=require("./config/database");
 const User=require("./models/user");
 
+app.use(express.json());
+
 app.post("/signUp",async (req,res)=>{
-  const user = new User({
-    firstName:"Balu",
-    lastName:"Pedakapu",
-    emailId:"balupedakapu143@gmail.com",
-    password:"balu@143"
-  })
+  const user = new User(req.body);
+  
   try{
   await user.save();
   res.send("User Sent Successfully");
@@ -18,6 +16,7 @@ app.post("/signUp",async (req,res)=>{
   catch(error){
     res.status(401).send("Error saving the User:" + error.message);
   }
+
 });
 
 
