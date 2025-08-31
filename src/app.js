@@ -14,14 +14,15 @@ app.post("/signUp",async (req,res)=>{
     res.send("User saved succcessfully")
   }
   catch(err){
-    res.status(401).send("Error addding user")
+    res.status(401).send("Error:"+err.message)
   }
 });
 
 // API to find particular user using emailId
 app.get("/users",async (req,res)=>{
-  const user=await User.findOne({emailId:req.body.emailId});
+  
   try{
+    const user=await User.findOne({emailId:req.body.emailId});
     res.send(user);
   }
   catch(error){
@@ -53,16 +54,25 @@ app.delete("/userDelete",async (req,res)=>{
 })
 
 // API to update user details with Email
-app.patch("/userUpdate",async(req,res)=>{
-  const userId=req.body._id;
+app.patch("/userUpdate/:userId",async(req,res)=>{
+  const userId=req.params?.userId;
   const data=req.body;
+
   try{
-    await User.findByIdAndUpdate(userId,data)
-    // await User.findOneAndUpdate({emailId:userId},data);
-    res.send("user updated successfully");
+    const updateAllow=["age","gender","about","skills"];
+    const isUpdateAllow=Object.keys(data).every((k)=>
+      updateAllow.includes(k)
+    );
+    if(!isUpdateAllow){
+    throw new Error("Check the Keys");
+    }
+    // if(data?.skills.length>5){throw new Error("Skills shouldn't exceed 5")}
+  // await User.updateOne({emailId:userId},data)
+  await User.findByIdAndUpdate(userId,data,{runValidators:true});
+  res.send("user updated successfully");
   }
   catch(err){
-    res.status(401).send("Error in updating User")
+    res.status(401).send("Error:"+err.message)
   }
 })
 
