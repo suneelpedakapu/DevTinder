@@ -2,31 +2,32 @@ const express=require('express');
 const app=express();
 
 const bcrypt=require("bcrypt");
+const jwt=require("jsonwebtoken");
+const cookieParser=require("cookie-parser");
+
 const dbConnect=require("./config/database");
 const User=require("./models/user");
 const {validateSignUp}=require("./utils/validation");
+const{userAuth}=require("./middlewares/auth")
 
-app.use(express.json()); //Middleware to convert json to js obj
+app.use(express.json()); //Middleware to convert json to js obj for signUp process
+app.use(cookieParser());// Middleware to read the cookies in console
+
 
 // API to post user taking details from body of postman
 app.post("/signUp",async (req,res)=>{
   try{
-  //validate data
+  //validating schema values
   validateSignUp(req);
-
-  //enctpring password
-  const {firstName,lastName,emailId,password,age}=req.body;
-  const passwordHash=await bcrypt.hash(password,10)
-  console.log(passwordHash);
-
-  //creating new instance of user
+  //password encrpyting
+  const {firstName,lastName,emailId,password}=req.body;
+  const passwordHash=await bcrypt.hash(password,10);
+  //creating new user
   const user1=new User({
-    firstName,lastName,emailId,password:passwordHash,age
-  });
-
-  //Saving new user
-  await user1.save();
-  res.send("User saved succcessfully")
+    firstName,lastName,emailId,password:passwordHash
+  })
+  await user1.save()
+  res.send("User saved successfully")
   }
   catch(err){
     res.status(401).send("Error:"+err.message)
@@ -35,81 +36,48 @@ app.post("/signUp",async (req,res)=>{
 
 app.post("/login",async (req,res)=>{
   try{
-    const {emailId,password}=req.body;
+    const{emailId,password}=req.body;
     const user=await User.findOne({emailId:emailId});
     if(!user){
-      throw new Error("Invalid Credentials")
+      throw new Error("Invalid credentials");
     }
-
-    const isPasswordValid=await bcrypt.compare(password,user.password)
+    const isPasswordValid=await user.validPassword(password);
     if(isPasswordValid){
-      res.send("Login Successful")
+      //creating token
+      const token=await user.getJWT();
+      //wrapping it in cookie
+      res.cookie("token",token);
+      
+      res.send("Login successfull")
     }
     else{
-      throw new Error ("Invalid Credentials")
+      res.send("Invalid credentials")
     }
   }
   catch(err){
     res.status(401).send("Error:"+err.message)
-  }
-})
-
-// API to find particular user using emailId
-app.get("/users",async (req,res)=>{
-  
-  try{
-    const user=await User.findOne({emailId:req.body.emailId});
-    res.send(user);
-  }
-  catch(error){
-    res.status(401).send("Error finding user")
-  }
-})
-
-// API call to get all users in User Model database
-app.get("/feed",async(req,res)=>{
-  try{
-    const users=await User.findById('68a4ac4cbfdebf3c9ddbe721');
-    res.send(users)
-  }
-  catch(err){
-    res.status(401).send("Error in finding users")
   }
 });
 
-//API to delete user by Id
-app.delete("/userDelete",async (req,res)=>{
-  const userId=req.body.userId;
-  try{
-    await User.findByIdAndDelete(userId);
-    res.send("User Deleted Successfully");
+app.post("/sendRequest",userAuth,async (req,res)=>{
+  const user=req.user;
+  if(!user){
+    throw new Error("User not found")
   }
-  catch(err){
-    res.status(401).send("Error in deleting User")
+  res.send(user.firstName+" sent request")
+});
+
+
+//API to get profile
+app.get("/profile",userAuth,async (req,res)=>{
+  const user=req.user;
+  if(!user){
+    throw new Error("User not found")
   }
+  res.send(user);
 })
 
-// API to update user details with Email
-app.patch("/userUpdate/:userId",async(req,res)=>{
-  const userId=req.params?.userId;
-  const data=req.body;
 
-  try{
-    const updateAllow=["age","gender","about","skills"];
-    const isUpdateAllow=Object.keys(data).every((k)=>
-    updateAllow.includes(k)
-    );
-    if(!isUpdateAllow){
-      throw new Error("check the keys")
-    }
-
-    await User.findByIdAndUpdate(userId,data,{runValidators:true})
-    res.send("User Updated successfully");
-  }
-  catch(err){
-    res.status(401).send("Error:"+err.message)
-  }
-})
 
 dbConnect().
 then(()=>{
