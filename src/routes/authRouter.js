@@ -5,7 +5,7 @@ const User=require("../models/user");
 const {validateSignUp}=require("../utils/validation");
 const bcrypt=require("bcrypt");
 
-router.post("/signUp",async (req,res)=>{
+router.post("/signup",async (req,res)=>{
   try{
   //validating schema values
   validateSignUp(req);
@@ -36,9 +36,8 @@ router.post("/login",async (req,res)=>{
       //creating token
       const token=await user.getJWT();
       //wrapping it in cookie
-      res.cookie("token",token);
-      
-      res.send("Login successfull")
+      res.cookie("token",token,{expiresIn:'10d'})
+      .send("Login successfull")
     }
     else{
       res.send("Invalid credentials")
@@ -49,6 +48,12 @@ router.post("/login",async (req,res)=>{
   }
 });
 
+router.post('/logout',async(req,res)=>{
+    res.cookie("token",null,{
+        expiresIn:new Date(Date.now())
+    });
+    res.send("Logout Successful")
+})
 
 
 module.exports=router;

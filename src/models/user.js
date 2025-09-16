@@ -24,11 +24,6 @@ const userSchema=new mongoose.Schema({
         unique:true,
         trim:true,
         isLowercase:true,
-        validate(value){
-            if(!validator.isEmail(value)){
-                throw new Error("Provide valid email address")
-            }
-        }
     },
     age:{
         type:Number,
@@ -39,7 +34,7 @@ const userSchema=new mongoose.Schema({
         type:String,
         validate(value){
             if(!validator.isStrongPassword(value)){
-                throw new Error("Enter strong password")
+                throw new Error("Enter strong password");
             }
         }
     },
@@ -58,7 +53,7 @@ const userSchema=new mongoose.Schema({
     skills:{
         type:["string"],
         validate(values){
-            if(values.length>5){
+            if(values.length>6){
                 throw new Error("Skills should not Exceed more than 5")
             }
         }
@@ -76,7 +71,9 @@ userSchema.methods.validPassword=async function(passwordByUser){
 
 userSchema.methods.getJWT=async function(){
     const user=this;
-    const token=await jwt.sign({_id:user._id},"Suneel@143");
+    const token=await jwt.sign({_id:user._id},"Suneel@143",{
+        expiresIn:'7d'
+    });
     return token;
 }
 
