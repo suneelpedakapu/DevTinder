@@ -3,7 +3,7 @@ const router=express.Router();
 const bcrypt=require("bcrypt");
 
 const {userAuth}=require("../middlewares/auth");
-const {validateProfileEdit, validateSignUp}=require("../utils/validation");
+const {validateProfileEdit}=require("../utils/validation");
 
 router.get("/profile",userAuth,async (req,res)=>{
   try{

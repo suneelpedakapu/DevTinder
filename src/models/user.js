@@ -65,7 +65,6 @@ userSchema.methods.validPassword=async function(passwordByUser){
     const user=this;
     const passwordHash=user.password;
     const isPasswordValid=await bcrypt.compare(passwordByUser,passwordHash);
-
     return isPasswordValid;
 }
 
@@ -76,7 +75,5 @@ userSchema.methods.getJWT=async function(){
     });
     return token;
 }
-
-
 
 module.exports=mongoose.model("User",userSchema);

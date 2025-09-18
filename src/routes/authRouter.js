@@ -27,14 +27,14 @@ router.post("/signup",async (req,res)=>{
 router.post("/login",async (req,res)=>{
   try{
     const{emailId,password}=req.body;
-    const user=await User.findOne({emailId:emailId});
-    if(!user){
+    const user1=await User.findOne({emailId:emailId});
+    if(!user1){
       throw new Error("Invalid credentials");
     }
-    const isPasswordValid=await user.validPassword(password);
+    const isPasswordValid=await user1.validPassword(password);  //schema method, user1 is schema
     if(isPasswordValid){
       //creating token
-      const token=await user.getJWT();
+      const token=await user1.getJWT();
       //wrapping it in cookie
       res.cookie("token",token,{expiresIn:'10d'})
       .send("Login successfull")
