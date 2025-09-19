@@ -3,7 +3,7 @@ const router=express.Router();
 const {userAuth}=require("../middlewares/auth");
 const ConnectionRequest=require("../models/connectionRequest");
 
-router.get("/user/requests",userAuth,async(req,res)=>{
+router.get("/user/pendingRequests",userAuth,async(req,res)=>{
     try{
         //get logged in user
         const loggedInUser=req.user;
@@ -32,8 +32,15 @@ router.get("/user/connections",userAuth,async(req,res)=>{
                 {fromUserId:loggedInUser._id,status:"accepted"}
             ]
         }).populate("fromUserId","firstName lastName")
-        // getting fromUserId from each connection from connections
-        const data=connections.map((row)=>row.fromUserId);
+        .populate("toUserId","firstName lastName")
+
+        // getting fromUserId from each object of array connections 
+        const data=connections.map((row)=>{
+            if(row.fromUserId._id.toString()===loggedInUser._id.toString()){
+                return row.toUserId
+            }
+            return row.fromUserId
+        });
 
         res.json({
             message:`${loggedInUser.firstName} connections `,
