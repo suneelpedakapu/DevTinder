@@ -10,10 +10,12 @@ app.use(cookieParser()); // Middleware to read the cookies or tokens in console
 const authRouter=require('./routes/authRouter');
 const profileRouter=require('./routes/profileRouter');
 const connectionRouter=require('./routes/connectionRouter');
+const userRouter=require("./routes/userRouter");
 
 app.use('/',authRouter);
 app.use('/',profileRouter);
 app.use('/',connectionRouter);
+app.use("/",userRouter);
 
 
 dbConnect().

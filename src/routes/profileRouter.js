@@ -21,11 +21,11 @@ router.get("/profile",userAuth,async (req,res)=>{
 router.patch('/profile/edit',userAuth,async(req,res)=>{
     try{
         if(!validateProfileEdit(req)){
-            throw new Error("Invalid Edit Request")
+          throw new Error("Invalid Edit Request")
         }
         const loginUser=req.user;
         Object.keys(req.body).forEach((key)=>(loginUser[key]=req.body[key]));
-        await loginUser.save();
+        await loginUser.save(); // Whenever you edit profile you should save it later
 
         res.json({
             Message:`${loginUser.firstName}, your profile updated successfully`,
@@ -41,6 +41,7 @@ router.patch('/changePassword',userAuth,async(req,res)=>{
     try{
         const loginUser=req.user;
         Object.keys(req.body).forEach((key)=>(loginUser[key]=req.body[key]));
+        //changing new password into hash 
         const passwordHash=await bcrypt.hash(loginUser.password,10);
         loginUser.password=passwordHash;
         await loginUser.save();

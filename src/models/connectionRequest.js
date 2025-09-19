@@ -1,8 +1,9 @@
-const mongoose=require('mongoose');
+const mongoose=require("mongoose");
 
 const connectionRequestSchema=new mongoose.Schema({
     fromUserId:{
         type:mongoose.Schema.Types.ObjectId,
+        ref:"User",
         required:true
     },
     toUserId:{
@@ -13,13 +14,13 @@ const connectionRequestSchema=new mongoose.Schema({
         type:String,
         enum:{
             values:["ignored","interested","accepted","rejected"],
-            message:`{VALUES} is incorrect status type`
-        },
-        required:true
+            message:`{VALUE} isn't valid one`
+        }
     }
-},{timestamps:true});
+},{timestamps:true})
 
-//not mandatory, but checking something before saving
+
+// not mandatory, but checking something before saving
 // connectionRequestSchema.pre("save",function(next){
 //     const connectionRequest=this;
 //     //checking from and to are same
@@ -29,5 +30,4 @@ const connectionRequestSchema=new mongoose.Schema({
 //     next();
 // })
 
-const model=mongoose.model("ConnectionRequest",connectionRequestSchema);
-module.exports=model;
+module.exports=mongoose.model("ConnectionRequest",connectionRequestSchema);
