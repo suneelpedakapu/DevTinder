@@ -3,7 +3,7 @@ const router=express.Router();
 const bcrypt=require("bcrypt");
 
 const {userAuth}=require("../middlewares/auth");
-const {validateProfileEdit}=require("../utils/validation");
+const {validateProfileEdit,validatePassword}=require("../utils/validation");
 
 router.get("/profile",userAuth,async (req,res)=>{
   try{
@@ -24,6 +24,7 @@ router.patch('/profile/edit',userAuth,async(req,res)=>{
           throw new Error("Invalid Edit Request")
         }
         const loginUser=req.user;
+        //changing values of loginUser with req body 
         Object.keys(req.body).forEach((key)=>(loginUser[key]=req.body[key]));
         await loginUser.save(); // Whenever you edit profile you should save it later
 
@@ -40,8 +41,21 @@ router.patch('/profile/edit',userAuth,async(req,res)=>{
 router.patch('/changePassword',userAuth,async(req,res)=>{
     try{
         const loginUser=req.user;
+        //validate keys
+        if(!validatePassword(req)){
+          throw new Error("Enter valid key")
+        }
+
+        //checking new and old passwords shouldn't same
+        const isSame = await bcrypt.compare(req.body.password, loginUser.password);
+        if (isSame) {
+          return res.status(400).send({ error: "New password must be different from old password" });
+        }
+
+        //changing key values
         Object.keys(req.body).forEach((key)=>(loginUser[key]=req.body[key]));
         //changing new password into hash 
+        
         const passwordHash=await bcrypt.hash(loginUser.password,10);
         loginUser.password=passwordHash;
         await loginUser.save();

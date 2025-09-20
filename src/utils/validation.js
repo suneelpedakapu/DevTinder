@@ -27,7 +27,15 @@ const validateProfileEdit=(req)=>{
     return isEditAllowed;
 }
 
+const validatePassword=(req)=>{
+    const allowed=["password"];
+    const isAllowed=Object.keys(req.body).every((key)=>
+        allowed.includes(key)
+    )
+    return isAllowed;
+}
+
 
 module.exports={
-    validateSignUp,validateProfileEdit
+    validateSignUp,validateProfileEdit,validatePassword
 }
