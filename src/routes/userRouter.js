@@ -25,22 +25,21 @@ router.get("/user/pendingRequests",userAuth,async(req,res)=>{
 router.get("/user/connections",userAuth,async(req,res)=>{
     try{
         const loggedInUser=req.user;
-        //get users with both from and to Id's
+        //get accepted connections of logIn user
         const connections=await ConnectionRequest.find({
-            $or:[
-                {fromUserId:loggedInUser._id,status:"accepted"},
+            $or:[{fromUserId:loggedInUser._id,status:"accepted"},
                 {toUserId:loggedInUser._id,status:"accepted"}
             ]
-        })
-        .populate("fromUserId","firstName lastName")
+        }).populate("fromUserId","firstName lastName")
         .populate("toUserId","firstName lastName")
 
-        const data=connections.map((each)=>{
-            if(each.fromUserId._id.toString()===loggedInUser._id.toString()){
-                return each.toUserId
+        const data=connections.map((row)=>{
+            if(row.fromUserId._id.toString()===loggedInUser._id.toString()){
+                return row.toUserId
             }
-            return each.fromUserId
-        });
+            return row.fromUserId
+        })
+
         res.json({
             message:`${loggedInUser.firstName} Connections...`,
             Data:data
@@ -55,26 +54,33 @@ router.get("/user/connections",userAuth,async(req,res)=>{
 router.get("/user/feed",userAuth,async(req,res)=>{
     try{
         const loggedInUser=req.user;
-        //getting all sent and received requests of loggedin user
-        const connectionRequests=await ConnectionRequest.find({
+        const page=parseInt(req.query.page)||1;
+        let limit=parseInt(req.query.limit)||10;
+        limit=limit>50? 50:limit;
+        const skip=(page-1)*limit;
+        //finding all the requested connections,whether interested or ignored
+        const connections=await ConnectionRequest.find({
             $or:[
-                {fromUserId:loggedInUser._id},{toUserId:loggedInUser._id}
+                {fromUserId:loggedInUser._id},
+                {toUserId:loggedInUser._id}
             ]
+        }).select("fromUserId toUserId")
+        //creating set to keep connections in it
+        const hideFromFeed=new Set();
+        //adding these in set
+        connections.forEach((each)=>{
+            hideFromFeed.add(each.fromUserId._id.toString());
+            hideFromFeed.add(each.toUserId._id.toString());
         })
-        .select("fromUserId toUserId")
-        //creating a set which doesn't takes repeated values
-        const hideFromUserFeed=new Set();
-        connectionRequests.forEach((each)=>{
-            hideFromUserFeed.add(each.fromUserId.toString());
-            hideFromUserFeed.add(each.toUserId.toString())}
-        )
-        //getting users which are available after below conditions
-        const users=await User.find({
-            $and:[{_id:{$nin: Array.from(hideFromUserFeed)}},
-            {_id:{$ne:loggedInUser._id}}
+        //now getting the feed
+        const userFeed=await User.find({
+            $and:[
+                {_id:{$nin: Array.from(hideFromFeed)}},
+                {_id:{$ne:loggedInUser._id}}
             ]
-        }).select("firstName lastName About")
-        res.send(users)
+        }).select("firstName lastName About").skip(skip).limit(limit);
+
+        res.send(userFeed)
     }
     catch(err){
         res.status(404).send("Error:"+err.message)

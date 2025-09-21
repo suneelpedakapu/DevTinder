@@ -49,7 +49,9 @@ router.patch('/changePassword',userAuth,async(req,res)=>{
         //checking new and old passwords shouldn't same
         const isSame = await bcrypt.compare(req.body.password, loginUser.password);
         if (isSame) {
-          return res.status(400).send({ error: "New password must be different from old password" });
+          return res.status(400).send({ 
+            error: "New password must be different from old password" 
+          });
         }
 
         //changing key values
